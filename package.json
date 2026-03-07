@@ -1,0 +1,29 @@
+{
+  "name": "merchant-ms",
+  "version": "1.0.0",
+  "description": "Merchant Management System with Express and PostgreSQL",
+  "main": "src/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "migrate": "node src/db/migrate.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
