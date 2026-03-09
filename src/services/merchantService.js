@@ -31,13 +31,6 @@ export async function createMerchant(merchantData, operatorId) {
 
     const merchant = merchantResult.rows[0];
 
-    // Log the creation in audit_logs
-    await client.query(
-      `INSERT INTO audit_logs (merchant_id, operator_id, old_status_id, new_status_id)
-       VALUES ($1, $2, NULL, 1)`,
-      [merchant.id, operatorId]
-    );
-
     // Commit transaction
     await client.query('COMMIT');
 
@@ -165,17 +158,19 @@ export async function updateMerchant(merchantId, updateData, operatorId) {
     const updateResult = await client.query(updateQuery, values);
     const updatedMerchant = updateResult.rows[0];
 
-    // Log the update in audit_logs
-    await client.query(
-      `INSERT INTO audit_logs (merchant_id, operator_id, old_status_id, new_status_id)
-       VALUES ($1, $2, $3, $4)`,
-      [
-        merchantId,
-        operatorId,
-        currentMerchant.status_id,
-        updatedMerchant.status_id,
-      ]
-    );
+    // Log to audit_logs only if status changed
+    if (currentMerchant.status_id !== updatedMerchant.status_id) {
+      await client.query(
+        `INSERT INTO audit_logs (merchant_id, operator_id, old_status_id, new_status_id)
+         VALUES ($1, $2, $3, $4)`,
+        [
+          merchantId,
+          operatorId,
+          currentMerchant.status_id,
+          updatedMerchant.status_id,
+        ]
+      );
+    }
 
     // Commit transaction
     await client.query('COMMIT');

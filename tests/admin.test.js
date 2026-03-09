@@ -162,9 +162,8 @@ describe('Admin-Only Operations', () => {
       expect(auditLogCall).toBeDefined();
       expect(auditLogCall[1][0]).toBe(mockMerchantId); // merchant_id
       expect(auditLogCall[1][1]).toBe(mockAdminId); // operator_id
-      expect(auditLogCall[1][2]).toBe('MERCHANT_DELETED'); // action
-      expect(auditLogCall[1][3]).toEqual(mockMerchant); // old_values
-      expect(auditLogCall[1][4]).toBeNull(); // new_values
+      expect(auditLogCall[1][2]).toBe(1); // old_status_id (was Pending)
+      expect(auditLogCall[1][3]).toBeNull(); // new_status_id (null = deleted)
     });
 
     it('should rollback on database error', async () => {

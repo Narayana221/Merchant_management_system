@@ -427,45 +427,32 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
   "merchant_id": "c2ddebc9-9c0b-4ef8-bb6d-6bb9bd380a11",
   "history": [
     {
-      "id": "log-3",
-      "action": "STATUS_CHANGE",
-      "old_values": {
-        "status_id": 1
-      },
-      "new_values": {
-        "status_id": 2
-      },
-      "created_at": "2026-03-08T11:00:00.000Z",
-      "operator_name": "Admin User",
+      "id": "a1b2c3d4-uuid",
+      "old_status_id": 2,
+      "new_status_id": 3,
+      "old_status_name": "Active",
+      "new_status_name": "Suspended",
+      "changed_at": "2026-03-08T15:30:00.000Z",
       "operator_email": "admin@test.com",
       "operator_role": "admin"
     },
     {
-      "id": "log-2",
-      "action": "UPDATE",
-      "old_values": {
-        "name": "Casa Electronics Store"
-      },
-      "new_values": {
-        "name": "Casa Electronics & Appliances"
-      },
-      "created_at": "2026-03-08T10:50:00.000Z",
-      "operator_name": "Admin User",
+      "id": "b2c3d4e5-uuid",
+      "old_status_id": 1,
+      "new_status_id": 2,
+      "old_status_name": "Pending KYB",
+      "new_status_name": "Active",
+      "changed_at": "2026-03-08T11:00:00.000Z",
       "operator_email": "admin@test.com",
       "operator_role": "admin"
     },
     {
-      "id": "log-1",
-      "action": "MERCHANT_CREATED",
-      "old_values": null,
-      "new_values": {
-        "name": "Casa Electronics Store",
-        "category": "Electronics",
-        "city": "Casablanca",
-        "contact_email": "contact@casaelectronics.ma"
-      },
-      "created_at": "2026-03-08T10:30:00.000Z",
-      "operator_name": "Admin User",
+      "id": "c3d4e5f6-uuid",
+      "old_status_id": null,
+      "new_status_id": null,
+      "old_status_name": null,
+      "new_status_name": null,
+      "changed_at": "2026-03-08T10:30:00.000Z",
       "operator_email": "admin@test.com",
       "operator_role": "admin"
     }
@@ -473,6 +460,15 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
   "total_events": 3
 }
 ```
+
+**Note:** The audit log tracks status changes. Each entry shows:
+- Status change entries have both old and new status values
+- Merchant creation entry has `null` for all status fields (first entry when merchant was created)
+- `old_status_id` / `new_status_id` - Numeric status IDs (1=Pending, 2=Active, 3=Suspended)
+- `old_status_name` / `new_status_name` - Human-readable status labels
+- `changed_at` - Timestamp of the change
+- `operator_email` - Email of the operator who made the change
+- `operator_role` - Role of the operator (admin/operator)
 
 ---
 

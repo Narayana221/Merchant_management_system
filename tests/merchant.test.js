@@ -61,7 +61,7 @@ describe('Merchant API', () => {
       expect(mockQuery).not.toHaveBeenCalled();
     });
 
-    it('creates merchant with valid token and logs to audit_logs', async () => {
+    it('creates merchant with valid token', async () => {
       const token = generateToken(operatorId);
 
       // Mock transaction BEGIN
@@ -80,9 +80,6 @@ describe('Merchant API', () => {
           },
         ],
       });
-
-      // Mock INSERT audit_logs query
-      mockClientQuery.mockResolvedValueOnce({ rows: [] });
 
       // Mock transaction COMMIT
       mockClientQuery.mockResolvedValueOnce({ rows: [] });
@@ -108,10 +105,6 @@ describe('Merchant API', () => {
           validMerchantData.city,
           validMerchantData.contact_email,
         ]
-      );
-      expect(mockClientQuery).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO audit_logs'),
-        [merchantId, operatorId]
       );
       expect(mockClientQuery).toHaveBeenCalledWith('COMMIT');
       expect(mockClientRelease).toHaveBeenCalled();
@@ -343,7 +336,7 @@ describe('Merchant API', () => {
       expect(mockQuery).not.toHaveBeenCalled();
     });
 
-    it('updates merchant and logs to audit_logs', async () => {
+    it('updates merchant and logs to audit_logs only when status changes', async () => {
       const token = generateToken(operatorId);
 
       // Mock transaction BEGIN
@@ -377,7 +370,7 @@ describe('Merchant API', () => {
         ],
       });
 
-      // Mock INSERT audit_logs
+      // Mock INSERT audit_logs (only called when status changes)
       mockClientQuery.mockResolvedValueOnce({ rows: [] });
 
       // Mock transaction COMMIT
@@ -399,6 +392,7 @@ describe('Merchant API', () => {
         'SELECT * FROM merchants WHERE id = $1',
         [merchantId]
       );
+      // Audit log only created because status changed (1 -> 2)
       expect(mockClientQuery).toHaveBeenCalledWith(
         expect.stringContaining('INSERT INTO audit_logs'),
         [merchantId, operatorId, 1, 2]
