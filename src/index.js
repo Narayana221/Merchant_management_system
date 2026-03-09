@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import merchantRoutes from './routes/merchantRoutes.js';
+import webhookRoutes from './routes/webhookRoutes.js';
 
 dotenv.config();
 
@@ -11,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/merchants', merchantRoutes);
+app.use('/webhooks', webhookRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

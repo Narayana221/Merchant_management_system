@@ -228,3 +228,50 @@ export async function updateStatus(req, res) {
     res.status(500).json({ error: 'Failed to update merchant status' });
   }
 }
+
+/**
+ * Get full audit history for a merchant
+ * GET /merchants/:id/history
+ */
+export async function getMerchantHistory(req, res) {
+  try {
+    const merchantId = req.params.id;
+    const history = await merchantService.getMerchantHistory(merchantId);
+    
+    res.status(200).json({
+      merchant_id: merchantId,
+      history,
+      total_events: history.length
+    });
+  } catch (err) {
+    if (err.message === 'Merchant not found') {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error('Error fetching merchant history:', err);
+    res.status(500).json({ error: 'Failed to retrieve merchant history' });
+  }
+}
+
+/**
+ * Delete a merchant (Admin only)
+ * DELETE /merchants/:id
+ */
+export async function deleteMerchant(req, res) {
+  try {
+    const merchantId = req.params.id;
+    const operatorId = req.user.id;
+
+    await merchantService.deleteMerchant(merchantId, operatorId);
+    
+    res.status(200).json({ 
+      message: 'Merchant deleted successfully',
+      merchant_id: merchantId
+    });
+  } catch (err) {
+    if (err.message === 'Merchant not found') {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error('Error deleting merchant:', err);
+    res.status(500).json({ error: 'Failed to delete merchant' });
+  }
+}

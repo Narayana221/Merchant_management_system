@@ -1,13 +1,15 @@
 import express from 'express';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import {
   createMerchant,
   getAllMerchants,
   getMerchantById,
   updateMerchant,
+  deleteMerchant,
   addDocument,
   getDocuments,
   updateStatus,
+  getMerchantHistory,
 } from '../controllers/merchantController.js';
 
 const router = express.Router();
@@ -33,7 +35,13 @@ router.post('/:id/documents', addDocument);
 // GET /merchants/:id/documents - Get all KYB documents for a merchant
 router.get('/:id/documents', getDocuments);
 
+// GET /merchants/:id/history - Get full audit history for a merchant
+router.get('/:id/history', getMerchantHistory);
+
 // PATCH /merchants/:id/status - Update merchant status
 router.patch('/:id/status', updateStatus);
+
+// DELETE /merchants/:id - Delete merchant (Admin only)
+router.delete('/:id', requireAdmin, deleteMerchant);
 
 export default router;

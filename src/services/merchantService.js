@@ -1,4 +1,12 @@
 import pool from '../db/index.js';
+import { sendMerchantStatusWebhook } from './webhookService.js';
+
+// Status label mapping
+const STATUS_LABELS = {
+  1: 'Pending KYB',
+  2: 'Active',
+  3: 'Suspended',
+};
 
 /**
  * Create a new merchant with transaction
@@ -325,7 +333,116 @@ export async function updateMerchantStatus(merchantId, newStatusId, operatorId) 
     // Commit transaction
     await client.query('COMMIT');
 
+    // Send webhook notifications (non-blocking, runs in background)
+    // Determine event type based on status change
+    let eventType = null;
+    if (oldStatusId === 1 && newStatusId === 2) {
+      eventType = 'merchant.approved';
+    } else if (newStatusId === 3) {
+      eventType = 'merchant.suspended';
+    } else if (oldStatusId === 3 && newStatusId === 2) {
+      eventType = 'merchant.reactivated';
+    }
+
+    if (eventType) {
+      sendMerchantStatusWebhook(merchantId, eventType, {
+        old_status: STATUS_LABELS[oldStatusId],
+        new_status: STATUS_LABELS[newStatusId],
+      });
+    }
+
     return updatedMerchant;
+  } catch (err) {
+    // Rollback transaction on error
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    // Release client back to pool
+    client.release();
+  }
+}
+
+/**
+ * Get full audit history for a merchant
+ * @param {string} merchantId - UUID of the merchant
+ * @returns {Promise<Array>} Array of audit log entries with operator details
+ */
+export async function getMerchantHistory(merchantId) {
+  // First verify the merchant exists
+  const merchantCheck = await pool.query(
+    'SELECT id, name FROM merchants WHERE id = $1',
+    [merchantId]
+  );
+
+  if (merchantCheck.rows.length === 0) {
+    throw new Error('Merchant not found');
+  }
+
+  // Fetch all audit log entries for this merchant with operator details
+  const result = await pool.query(
+    `SELECT 
+      al.id,
+      al.old_status_id,
+      al.new_status_id,
+      ms_old.label as old_status_name,
+      ms_new.label as new_status_name,
+      al.changed_at,
+      o.email as operator_email,
+      or_role.name as operator_role
+    FROM audit_logs al
+    LEFT JOIN operators o ON al.operator_id = o.id
+    LEFT JOIN operator_roles or_role ON o.role_id = or_role.id
+    LEFT JOIN merchant_statuses ms_old ON al.old_status_id = ms_old.id
+    LEFT JOIN merchant_statuses ms_new ON al.new_status_id = ms_new.id
+    WHERE al.merchant_id = $1
+    ORDER BY al.changed_at DESC`,
+    [merchantId]
+  );
+
+  return result.rows;
+}
+
+export async function deleteMerchant(merchantId, operatorId) {
+  const client = await pool.connect();
+
+  try {
+    // Begin transaction
+    await client.query('BEGIN');
+
+    // Check if merchant exists
+    const merchantResult = await client.query(
+      'SELECT * FROM merchants WHERE id = $1',
+      [merchantId]
+    );
+
+    if (merchantResult.rows.length === 0) {
+      throw new Error('Merchant not found');
+    }
+
+    const merchant = merchantResult.rows[0];
+
+    // Delete the merchant record
+    await client.query(
+      'DELETE FROM merchants WHERE id = $1',
+      [merchantId]
+    );
+
+    // Log the deletion in audit logs (merchant no longer has a status)
+    await client.query(
+      `INSERT INTO audit_logs (merchant_id, operator_id, old_status_id, new_status_id)
+       VALUES ($1, $2, $3, $4)`,
+      [
+        merchantId,
+        operatorId,
+        merchant.status_id,
+        null,
+      ]
+    );
+
+    // Commit transaction
+    await client.query('COMMIT');
+
+    return { success: true };
   } catch (err) {
     // Rollback transaction on error
     await client.query('ROLLBACK');

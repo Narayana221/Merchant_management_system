@@ -22,16 +22,7 @@ jest.unstable_mockModule('../src/db/index.js', () => ({
 }));
 
 const { default: app } = await import('../src/index.js');
-const jwt = (await import('jsonwebtoken')).default;
-
-// Helper function to generate valid JWT token
-function generateToken(operatorId, roleId = 1) {
-  return jwt.sign(
-    { sub: operatorId, roleId, type: 'access' },
-    process.env.JWT_ACCESS_SECRET,
-    { expiresIn: '15m' }
-  );
-}
+const { generateToken } = await import('./helpers/tokenHelper.js');
 
 describe('Merchant API', () => {
   const operatorId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
