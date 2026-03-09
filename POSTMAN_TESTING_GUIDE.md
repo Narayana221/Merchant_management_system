@@ -92,31 +92,6 @@ Content-Type: application/json
 
 ---
 
-### 1.3 Logout
-**POST** `http://localhost:3000/auth/logout`
-
-**Headers:**
-```
-Authorization: Bearer YOUR_ACCESS_TOKEN
-Content-Type: application/json
-```
-
-**Body:**
-```json
-{
-  "refreshToken": "YOUR_REFRESH_TOKEN"
-}
-```
-
-**Response (200):**
-```json
-{
-  "message": "Logout successful"
-}
-```
-
----
-
 ## 2. MERCHANT CRUD APIs
 
 **⚠️ All merchant endpoints require authentication. Add this header to all requests:**
