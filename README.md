@@ -319,35 +319,6 @@ MerchantMS/
 | `JWT_ACCESS_SECRET` | Yes | Access token secret | `random-64-char-string` |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token secret | `random-64-char-string` |
 
-## Common Issues & Troubleshooting
-
-### Issue: Connection refused to database
-
-**Solution:** Ensure PostgreSQL is running
-```bash
-# macOS (Homebrew)
-brew services start postgresql@14
-
-# Linux (systemd)
-sudo systemctl start postgresql
-
-# Check status
-psql -d merchant_management_system_db -c "SELECT 1"
-```
-
-### Issue: JWT token errors
-
-**Solution:** Ensure JWT secrets are set in `.env` file and are not empty strings
-
-### Issue: Port already in use
-
-**Solution:** Kill the process using port 3000
-```bash
-lsof -ti:3000 | xargs kill -9
-```
-
-Or change the PORT in your `.env` file
-
 ### Issue: Migration errors
 
 **Solution:** Ensure you run migrations in order (001, 002, 003...)
@@ -390,28 +361,6 @@ npm test
 - [ ] Use a process manager (PM2, systemd)
 - [ ] Enable HTTPS/TLS
 - [ ] Set up monitoring and alerts
-
-### Example Production Start
-
-```bash
-NODE_ENV=production npm start
-```
-
-### Using PM2 (Process Manager)
-
-```bash
-# Install PM2
-npm install -g pm2
-
-# Start application
-pm2 start src/index.js --name merchant-ms
-
-# View logs
-pm2 logs merchant-ms
-
-# Restart
-pm2 restart merchant-ms
-```
 
 ## API Authentication
 
